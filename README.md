@@ -1,2 +1,2 @@
-# SplitExpense-
+# SplitExpense
 Split expense with friends 
