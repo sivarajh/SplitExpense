@@ -1,0 +1,24 @@
+{
+  "name": "SplitExpense (Expo + TypeScript)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  // Metro/Expo web dev server (8081) and legacy Expo ports.
+  "forwardPorts": [8081, 19000, 19006],
+  "portsAttributes": {
+    "8081": { "label": "Expo / Metro", "onAutoForward": "notify" }
+  },
+  // Install JS deps once when the Codespace is created (cached afterwards).
+  "postCreateCommand": "npm install --no-audit --no-fund",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "expo.vscode-expo-tools",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}

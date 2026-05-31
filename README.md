@@ -84,6 +84,32 @@ npm install
 npx expo start          # then press i (iOS), a (Android), or w (web)
 ```
 
+### Run in GitHub Codespaces
+
+This repo ships a [`.devcontainer`](.devcontainer/devcontainer.json) that installs
+dependencies and forwards the Expo dev-server port automatically.
+
+1. On GitHub: **Code → Codespaces → Create codespace** on this branch.
+2. Add your Supabase credentials. Either create a `.env` (see above), or set them
+   as **Codespaces secrets** (Settings → Codespaces) named `EXPO_PUBLIC_SUPABASE_URL`
+   and `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Expo reads `EXPO_PUBLIC_*` from the
+   environment.
+3. **Preview in the browser (easiest):**
+   ```bash
+   npx expo start --web
+   ```
+   Open the forwarded port **8081** (VS Code "Ports" tab → globe icon).
+4. **Run on a real phone with Expo Go:** the default LAN QR can't reach your phone
+   from a cloud container, so use tunnel mode (installs `@expo/ngrok` on first run):
+   ```bash
+   npx expo start --tunnel
+   ```
+   Scan the QR code with Expo Go.
+
+> Note: iOS/Android **simulators** can't run inside Codespaces — use the web
+> preview or Expo Go (tunnel) above, or run `npx expo run:ios/android` on a local
+> machine.
+
 ## Tests & type-checking
 
 ```bash
