@@ -110,6 +110,32 @@ dependencies and forwards the Expo dev-server port automatically.
 > preview or Expo Go (tunnel) above, or run `npx expo run:ios/android` on a local
 > machine.
 
+## Deploy the web app to GitHub Pages
+
+A workflow ([`.github/workflows/deploy-web.yml`](.github/workflows/deploy-web.yml))
+builds the Expo web export and publishes it to GitHub Pages on every push to
+`main`. One-time setup:
+
+1. **Add Supabase credentials as repo secrets** — Settings → Secrets and variables
+   → Actions → New repository secret:
+   - `EXPO_PUBLIC_SUPABASE_URL`
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+
+   (The anon key is inlined into the public bundle — that's expected and safe; it
+   is protected by Row Level Security.)
+2. **Enable Pages** — Settings → Pages → **Source: GitHub Actions**.
+3. Push to `main` (e.g. merge the PR), or run the workflow manually from the
+   **Actions** tab (**Run workflow**).
+
+The site is served at:
+
+```
+https://<your-github-username>.github.io/SplitExpense/
+```
+
+The build sets the correct base path via `PAGES_BASE_URL` (see `app.config.js`)
+and writes a `404.html` SPA fallback so deep links/refreshes work on Pages.
+
 ## Tests & type-checking
 
 ```bash
