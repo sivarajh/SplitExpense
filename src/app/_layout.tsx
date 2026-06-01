@@ -1,7 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,26 +9,11 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 import { queryClient } from '@/lib/queryClient';
 import { colors } from '@/theme/colors';
 
-// Redirects between the (auth) group and the rest of the app based on session.
-function useProtectedRoute() {
-  const { session, loading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading) return;
-    const inAuthGroup = segments[0] === '(auth)';
-    if (!session && !inAuthGroup) {
-      router.replace('/(auth)/sign-in');
-    } else if (session && inAuthGroup) {
-      router.replace('/(tabs)');
-    }
-  }, [session, loading, segments, router]);
-}
-
+// Protected-route guards ensure authenticated screens never mount without a
+// session (so screens can safely read the current user), and Expo Router
+// redirects to an available route when the guard flips.
 function RootNavigator() {
-  const { loading } = useAuth();
-  useProtectedRoute();
+  const { session, loading } = useAuth();
 
   if (loading) {
     return (
@@ -41,14 +25,19 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="group/new" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="group/[id]/index" />
-      <Stack.Screen name="group/[id]/add-expense" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="group/[id]/settle" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="group/[id]/members" />
-      <Stack.Screen name="expense/[id]" />
+      <Stack.Protected guard={!session}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!!session}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="group/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="group/[id]/index" />
+        <Stack.Screen name="group/[id]/add-expense" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="group/[id]/settle" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="group/[id]/members" />
+        <Stack.Screen name="expense/[id]" />
+      </Stack.Protected>
     </Stack>
   );
 }
