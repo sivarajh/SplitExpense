@@ -44,3 +44,6 @@ example
 
 # environment
 .env
+
+# web build output
+/dist
