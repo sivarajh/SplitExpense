@@ -17,22 +17,14 @@ export async function getGroup(groupId: string): Promise<Group> {
   return data as Group;
 }
 
-// Create a group and add the creator as the first member.
-export async function createGroup(name: string, userId: string): Promise<Group> {
-  const { data, error } = await supabase
-    .from('groups')
-    .insert({ name: name.trim(), created_by: userId })
-    .select()
-    .single();
+// Create a group and add the creator as the first member, atomically.
+// Uses the create_group RPC so both inserts happen in one transaction and the
+// new row is returned without tripping the "must be a member to read" RLS policy.
+// (userId is kept for call-site compatibility; the RPC uses auth.uid() server-side.)
+export async function createGroup(name: string, _userId?: string): Promise<Group> {
+  const { data, error } = await supabase.rpc('create_group', { p_name: name.trim() });
   if (error) throw error;
-  const group = data as Group;
-
-  const { error: memberError } = await supabase
-    .from('group_members')
-    .insert({ group_id: group.id, user_id: userId });
-  if (memberError) throw memberError;
-
-  return group;
+  return data as Group;
 }
 
 export interface GroupData {

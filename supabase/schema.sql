@@ -106,6 +106,37 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- =========================================================================
+-- Atomic group creation (group + creator membership in one transaction).
+-- SECURITY DEFINER so the creator can be inserted and the row returned without
+-- being blocked by the "must already be a member to read" SELECT policy.
+-- =========================================================================
+
+create or replace function public.create_group(p_name text)
+returns public.groups
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_group public.groups;
+begin
+  if auth.uid() is null then
+    raise exception 'must be authenticated';
+  end if;
+
+  insert into public.groups (name, created_by)
+  values (p_name, auth.uid())
+  returning * into v_group;
+
+  insert into public.group_members (group_id, user_id)
+  values (v_group.id, auth.uid())
+  on conflict (group_id, user_id) do nothing;
+
+  return v_group;
+end;
+$$;
+
+-- =========================================================================
 -- Atomic expense + splits insert
 -- =========================================================================
 
@@ -172,7 +203,9 @@ create policy profiles_insert on public.profiles
 -- groups: members can read; any authenticated user can create (as creator); creator can update/delete.
 drop policy if exists groups_select on public.groups;
 create policy groups_select on public.groups
-  for select to authenticated using (public.is_group_member(id, auth.uid()));
+  for select to authenticated using (
+    public.is_group_member(id, auth.uid()) or created_by = auth.uid()
+  );
 
 drop policy if exists groups_insert on public.groups;
 create policy groups_insert on public.groups
