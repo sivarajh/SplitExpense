@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { useAuth } from '@/lib/auth';
 import { deleteExpense, getExpense } from '@/lib/api/expenses';
+import { confirmDestructive, notify } from '@/lib/dialogs';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { qk } from '@/lib/queryClient';
 import { colors } from '@/theme/colors';
@@ -32,14 +33,13 @@ export default function ExpenseDetailScreen() {
       queryClient.invalidateQueries({ queryKey: qk.activity });
       router.back();
     },
-    onError: (e: any) => Alert.alert('Error', e?.message ?? 'Could not delete.'),
+    onError: (e: any) => notify('Error', e?.message ?? 'Could not delete.'),
   });
 
   const confirmDelete = () => {
-    Alert.alert('Delete expense', 'This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteMutation.mutate() },
-    ]);
+    confirmDestructive('Delete expense', 'This cannot be undone.', 'Delete', () =>
+      deleteMutation.mutate()
+    );
   };
 
   const nameFor = (uid: string, name?: string | null, email?: string) =>

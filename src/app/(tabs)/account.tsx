@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { useAuth } from '@/lib/auth';
+import { notify } from '@/lib/dialogs';
 import { getProfile, updateProfile } from '@/lib/api/profiles';
 import { qk } from '@/lib/queryClient';
 import { colors } from '@/theme/colors';
@@ -30,9 +31,9 @@ export default function AccountScreen() {
     mutationFn: () => updateProfile(userId, name.trim()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk.profile(userId) });
-      Alert.alert('Saved', 'Your name has been updated.');
+      notify('Saved', 'Your name has been updated.');
     },
-    onError: (e: any) => Alert.alert('Error', e?.message ?? 'Could not save.'),
+    onError: (e: any) => notify('Error', e?.message ?? 'Could not save.'),
   });
 
   return (
